@@ -1,4 +1,5 @@
-﻿using Problem_Solving;
+﻿using Microsoft.EntityFrameworkCore;
+using Problem_Solving;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,109 +11,92 @@ namespace MyApp
         static void Main(string[] args)
         {
 
+            #region  Aggregate Func
+            string[] MySkills = {
+                "C#.net",
+                "Asp.net",
+                "MVC",
+                "Linq",
+                "EntityFramework",
+                "Swagger",
+                "Web-Api",
+                "OrcharCMS",
+                "Jquery",
+                "Sqlserver",
+                "Docusign"
+            };
+            //var commaSeperatedString = MySkills.Aggregate((s1, s2) => s1 + ", " + s2);
+            //Console.WriteLine("Aggregate : " + commaSeperatedString);
 
-            List<int> list = new List<int>() { 6, 5, 3, 1, 8, 7, 2, 4 };
+            var resuls = MySkills.Aggregate((a, b) => a + " ," + b);
+            Console.WriteLine("Results : " + resuls);
 
 
-            int newValue = 0;
+            List<int> ints = new List<int>();
+            ints.Add(1);
+            ints.Add(2);
+            ints.Add(3);
+            ints.Add(4);
+            ints.Add(5);
+            ints.Add(6);
+            ints.Add(7);
+            ints.Add(8);
+            ints.Add(9);
+            ints.Add(10);
+            ints.Add(11);
+            ints.Add(12);
+            ints.Add(13);
+            ints.Add(14);
+            ints.Add(15);
 
-            for (int i = 0; i < list.Count - 1; i++)
+            var xyz = ints.Aggregate((a, b) => a + b);
+            Console.WriteLine(xyz);
+            Console.WriteLine(ints.Sum());
+
+            #endregion
+
+
+            #region Search with Paggination
+
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: "TestDb")
+            .Options;
+
+            using (var context = new AppDbContext(options))
             {
-                for (int j = 0; j < list.Count - 1; j++)
-                {
-                    if (list[j] > list[j + 1])
-                    {
-                        newValue = list[j];
-                        list[j] = list[j + 1];
-                        list[j + 1] = newValue;
-                        //newValue = list[j];
-                        //oldValue = list[j + 1];
-                        //list[j] = oldValue;
-                        //list[j + 1] = newValue;
+                // Add sample data
+                var category1 = new Category { ID = 1, Name = "Electronics" };
+                var category2 = new Category { ID = 2, Name = "Clothing" };
+                context.Categories.AddRange(category1, category2);
+                context.Products.AddRange(
+                    new Product { ID = 1, Name = "Laptop", CategoryID = 1, Category = category1, IsDeleted = false },
+                    new Product { ID = 2, Name = "Phone", CategoryID = 1, Category = category1, IsDeleted = false },
+                    new Product { ID = 3, Name = "T-Shirt", CategoryID = 2, Category = category2, IsDeleted = false },
+                    new Product { ID = 4, Name = "RTX 4070", CategoryID = 1, Category = category1, IsDeleted = false },
+                    new Product { ID = 5, Name = "RX 570", CategoryID = 1, Category = category1, IsDeleted = false },
+                    new Product { ID = 6, Name = "POLO T-Shirt", CategoryID = 2, Category = category2, IsDeleted = false }
+                );
+                context.SaveChanges();
 
-
-
-
-                    }
-                    //oldValue = 0;
-                    newValue = 0;
-                }
+                var repository = new ProductRepository(context);
+                var result = repository.SearchWithPagination(
+                    skip: 0,
+                    take: 2,
+                    order: "ASC",
+                    predicate: x => !x.IsDeleted,
+                    orderByProperty:x=>x.ID
+                //predicate: p => p.CategoryID == 1,
+                //predicate: x => x.Name.Contains("Phone")
+                //includes: p => p.Category
+                ); 
+                Console.WriteLine(result);
             }
-
-
-
-
-
-
-            Console.WriteLine(list);
-
-
-
-
-
-
-            //List<int> list = new List<int>() { 256741038, 623958417, 467905213, 714532089 ,938071625 };
-
-            ////list.Add(1);
-            ////list.Add(2);
-            ////list.Add(3);
-            ////list.Add(4);
-            ////list.Add(5);
-            ////HackerRank.miniMaxSum(list);
-
-            ////int[] nums = { 1, 1, 2 };
-            //int[] nums = { 1, 3 };
-            ////var result = LeetCode.RemoveDuplicates(nums);
-            //var result = LeetCode.SearchRange(nums,1);
-
-            //Console.WriteLine(result);
-
-
-
-            //var ar = new List<int>();
-            //ar.Add(256741038);
-            //ar.Add(623958417);
-            //ar.Add(467905213);
-            //ar.Add(714532089);
-            //ar.Add(938071625);
-            //ar.Sort();
-            //int min = 0;
-            //int max = 0;
-            //bool isMini = true;
-            //bool isMaxi = true;
-            //for (int i = 0; i < ar.Count; i++)
-            //{
-            //    if (isMini)
-            //    {
-            //        if (i != ar.Count - 1)
-            //        {
-            //            min += ar[i];
-            //        }
-            //    }
-            //    if (isMaxi)
-            //    {
-            //        if (i != 0)
-            //        {
-            //            max+= ar[i];
-            //        }
-            //    }
-
-            //}
-
-            //Console.WriteLine(min + " " + max);
-            //int count = ar.Count();
-
-
-            //int min = ar.Sum() - ar[ar.Count - 1] ;
-            //int max = ar.Sum() - ar[0];
-
-            //Console.WriteLine(min + " " + max);
+            #endregion
 
             Console.ReadLine();
         }
     }
+
 }
-
-
 
 
